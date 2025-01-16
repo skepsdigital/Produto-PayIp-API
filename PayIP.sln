@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PayIP", "src\PayIP\PayIP.csproj", "{CA2B552B-4064-49FE-B053-6A5B3ACB4772}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CA2B552B-4064-49FE-B053-6A5B3ACB4772}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA2B552B-4064-49FE-B053-6A5B3ACB4772}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA2B552B-4064-49FE-B053-6A5B3ACB4772}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA2B552B-4064-49FE-B053-6A5B3ACB4772}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7C5075D-AE22-46B8-8602-3B726C4FD809}
+	EndGlobalSection
+EndGlobal
