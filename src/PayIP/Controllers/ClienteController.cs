@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Amazon.Lambda.APIGatewayEvents;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Microsoft.AspNetCore.Mvc;
 using PayIP.Model;
 using PayIP.Services.Interfaces;
+using System.Net.Mime;
 
 namespace PayIP.Controllers
 {
@@ -10,11 +14,16 @@ namespace PayIP.Controllers
     {
         private readonly ILogger<ClienteController> _logger;
         private readonly IClientePagamentoService _clientePagamentoService;
+        private readonly IAmazonS3 _s3client;
+        private readonly string _bucketName;
 
-        public ClienteController(ILogger<ClienteController> logger, IClientePagamentoService clientePagamentoService)
+        public ClienteController(ILogger<ClienteController> logger, IClientePagamentoService clientePagamentoService, IAmazonS3 s3client)
         {
             _logger = logger;
             _clientePagamentoService = clientePagamentoService;
+            _s3client = s3client;
+            _bucketName = "produtos.com.br";
+
         }
 
         [HttpGet("pagamentos/{cpf}")]
@@ -25,12 +34,57 @@ namespace PayIP.Controllers
             var result = await _clientePagamentoService.ObterPagamentosPendentesAsync(cpf);
             var relatorio = _clientePagamentoService.GerarRelatorioPagamentosPendentes(result);
 
-            if (result is not null)
+            if (result is not null && result.Any())
             {
                 return Ok(new {Relatorio = relatorio, Pagamentos = result});
             }
 
             return BadRequest();
+        }
+
+        [HttpGet("statement/pdf")]
+        public async Task<IActionResult> GetPaymentStatementPdf([FromQuery] string companyId, [FromQuery] string token)
+        {
+            var result = await _clientePagamentoService.ObterRelatorioPDF(companyId, token);
+
+            try
+            {
+                // Cria um MemoryStream a partir dos bytes do arquivo
+                using var stream = new MemoryStream(result);
+
+                // Configura a requisição de upload para o S3
+                var putRequest = new PutObjectRequest
+                {
+                    BucketName = _bucketName, // Nome do bucket S3
+                    Key = "relatorio"+Guid.NewGuid().ToString(),          // Nome do arquivo no S3
+                    InputStream = stream,    // Conteúdo do arquivo
+                    ContentType = "application/pdf", // Tipo MIME do arquivo
+                };
+
+                // Faz o upload para o S3
+                await _s3client.PutObjectAsync(putRequest);
+
+                // Gera a URL pré-assinada para o arquivo
+                var url = GeneratePresignedUrl(putRequest.Key, TimeSpan.FromHours(24));
+                return Ok(url);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro ao fazer upload para o S3: {ex.Message}");
+                return BadRequest();
+            }
+        }
+
+        private string GeneratePresignedUrl(string fileName, TimeSpan duration)
+        {
+            var request = new GetPreSignedUrlRequest
+            {
+                BucketName = _bucketName,
+                Key = fileName,
+                Expires = DateTime.UtcNow.Add(duration),
+            };
+
+            return _s3client.GetPreSignedURL(request);
         }
     }
 }

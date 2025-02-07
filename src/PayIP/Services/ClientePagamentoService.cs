@@ -1,6 +1,7 @@
 ﻿using PayIP.Infra.Interfaces;
 using PayIP.Model;
 using PayIP.Services.Interfaces;
+using System.Globalization;
 using System.Text;
 
 namespace PayIP.Services
@@ -10,14 +11,16 @@ namespace PayIP.Services
         private readonly ILogger<ClientePagamentoService> _logger;
         private readonly IPayIpSender _payIpSender;
 
-        private const string CLIENT_ID = "serv.nhdg76bcst45.skelps";
-        private const string CLIENT_SECRET = "0as5l0xcTQxqVc9mKoO4ZsWQYnAzIdLN";
+        private const string CLIENT_ID = "serv.hfbg645gdf.skelps";
+        private const string CLIENT_SECRET = "jjAMdi5SK4oROVI6W1pWIUtlhL1UImJK";
 
         public ClientePagamentoService(IPayIpSender payIpSender, ILogger<ClientePagamentoService> logger)
         {
             _payIpSender = payIpSender;
             _logger = logger;
         }
+
+        public async Task<byte[]> ObterRelatorioPDF(string companyId, string token) => await _payIpSender.GetPaymentStatementPdfAsync(companyId, token);
 
         public async Task<List<PagamentoInfosBot>> ObterPagamentosPendentesAsync(string cpf)
         {
@@ -31,7 +34,7 @@ namespace PayIP.Services
                     .Select(pay => new PagamentoInfosBot
                     {
                         CodigoPix = pay.QrCodePixCashin.Emv,
-                        DataDeVencimento = pay.DueDate.ToShortDateString(),
+                        DataDeVencimento = pay.DueDate.ToString("dd/MM/yyyy"),
                         Descricao = pay.Description,
                         Empresa = pay.Company.Name,
                         Id = pay.Id,
@@ -50,7 +53,9 @@ namespace PayIP.Services
             int contador = 1;
             foreach (var pagamento in pagamentos)
             {
-                sb.AppendLine($"{contador} - {pagamento.Empresa} - {pagamento.Valor:C} - {pagamento.DataDeVencimento}");
+                var valorFormatado = string.Format(CultureInfo.GetCultureInfo("pt-BR"), "{0:C}", pagamento.Valor);
+
+                sb.AppendLine($"{contador} - {pagamento.Empresa} - {valorFormatado} - {pagamento.DataDeVencimento}");
                 pagamento.IdInterno = contador;
                 contador++;
             }

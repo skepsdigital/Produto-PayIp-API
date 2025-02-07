@@ -12,7 +12,7 @@ namespace PayIP.Infra
         private readonly ILogger<PayIpSender> _logger;
         private readonly HttpClient _httpClient;
 
-        private readonly string _authUrl = "https://api.hml.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
+        private readonly string _authUrl = "https://api.prod.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
 
         public PayIpSender(ILogger<PayIpSender> logger, IHttpClientFactory clientFactory)
         {
@@ -62,8 +62,7 @@ namespace PayIP.Infra
             try
             {
                 // Substituir {cpf} na URL pelo CPF fornecido
-                var url = $"https://api.hml.payip.com.br/v1/payments/{cpf}/pending";
-
+                var url = $"https://api.prod.payip.com.br/v1/payments/payer/{cpf}/pending";
                 // Cria a requisição GET
                 var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
                 httpRequest.Headers.Add("Authorization", $"Bearer {token}");
@@ -97,6 +96,44 @@ namespace PayIP.Infra
                 return null;
             }
         }
+
+        public async Task<byte[]> GetPaymentStatementPdfAsync(string companyId, string token)
+        {
+            try
+            {
+                // Monta a URL com o companyId
+                var url = $"https://api.prod.payip.com.br/v1/payments/statement/pdf?companyId={companyId}";
+
+                // Cria a requisição GET
+                var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                httpRequest.Headers.Add("Authorization", $"Bearer {token}");
+
+                // Envia a requisição
+                var response = await _httpClient.SendAsync(httpRequest);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("PDF obtido com sucesso.");
+
+                    // Retorna o conteúdo do PDF como array de bytes
+                    return await response.Content.ReadAsByteArrayAsync();
+                }
+                else
+                {
+                    // Log de erro em caso de falha na requisição
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"Falha ao obter o PDF. StatusCode: {response.StatusCode}, Resposta: {responseContent}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log de erro em caso de exceção
+                _logger.LogError($"Erro ao obter o PDF: {ex.Message}");
+                return null;
+            }
+        }
+
 
     }
 }

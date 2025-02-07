@@ -1,8 +1,8 @@
+using Amazon.S3;
 using PayIP.Infra;
 using PayIP.Infra.Interfaces;
 using PayIP.Services;
 using PayIP.Services.Interfaces;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,6 +16,7 @@ builder.Services.AddScoped<IBlipSenderNotification, BlipSenderNotification>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IClientePagamentoService, ClientePagamentoService>();
 builder.Services.AddScoped<IPayIpSender, PayIpSender>();
+builder.Services.AddAWSService<IAmazonS3>();
 
 var app = builder.Build();
 

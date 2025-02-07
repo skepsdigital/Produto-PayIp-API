@@ -6,5 +6,6 @@ namespace PayIP.Services.Interfaces
     {
         string GerarRelatorioPagamentosPendentes(List<PagamentoInfosBot> pagamentos);
         Task<List<PagamentoInfosBot>> ObterPagamentosPendentesAsync(string cpf);
+        Task<byte[]> ObterRelatorioPDF(string companyId, string token);
     }
 }

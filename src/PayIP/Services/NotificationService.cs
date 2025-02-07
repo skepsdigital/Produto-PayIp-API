@@ -17,6 +17,10 @@ namespace PayIP.Services
 
         public async Task<object> SendNotification(NotificationRequest NotificationRequest)
         {
+            if(!NotificationRequest.Phone.StartsWith("55"))
+            {
+                NotificationRequest.Phone = "55" + NotificationRequest.Phone;
+            }
             var campaingRequest = new CampaignRequest()
             {
                 Id = Guid.NewGuid().ToString(),

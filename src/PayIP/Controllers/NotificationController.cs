@@ -18,13 +18,13 @@ namespace PayIP.Controllers
         }
 
         [HttpPost("send")]
-        public async Task<IActionResult> Add([FromBody] List<NotificationRequest> notificationRequest)
+        public async Task<IActionResult> Add([FromBody] NotificationRequestModel model)
         {
-            _logger.LogInformation($"Iniciando o processo de envio de notificação para {notificationRequest.Count} usuarios");
+            _logger.LogInformation($"Iniciando o processo de envio de notificação para {model.Mensagens.Count} usuarios");
 
-            if (notificationRequest.Any())
+            if (model.Mensagens.Any())
             {
-                return Ok(await _notificationService.SendNotifications(notificationRequest));
+                return Ok(await _notificationService.SendNotifications(model.Mensagens));
             }
 
             _logger.LogError("Requisição não pode estar vazia");
