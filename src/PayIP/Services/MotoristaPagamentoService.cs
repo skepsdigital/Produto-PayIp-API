@@ -17,6 +17,30 @@ namespace PayIP.Services
             _payIpSender = payIpSender;
         }
 
+        public async Task<List<ContatoEmail>> GetContatosEmail(string motorista, string password)
+        {
+            var token = await _payIpSender.GetLoginMotoraTokenAsync(motorista, password);
+
+            return await _payIpSender.GetContatosEmail(token.AccessToken);
+        }
+
+        public string GerarRelatorioDeContatos(List<ContatoEmail> contatos)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Email: ");
+
+            int contador = 1;
+            foreach (var contato in contatos)
+            {
+
+                sb.AppendLine($"{contador} - {contato.Responsible} - {contato.Email}");
+                contato.IdInterno = contador;
+                contador++;
+            }
+
+            return sb.ToString();
+        }
+
         public async Task<List<PagamentoInfosBot>> ObterPagamentosAsync(string mapaId, string motorista, string password, string? status, string? taxPayer, string? nf)
         {
             var token = await _payIpSender.GetLoginMotoraTokenAsync(motorista, password);

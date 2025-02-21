@@ -1,4 +1,5 @@
-﻿using PayIP.Infra.Interfaces;
+﻿using Newtonsoft.Json.Linq;
+using PayIP.Infra.Interfaces;
 using PayIP.Model;
 using PayIP.Model.PayIP.Model;
 using System.Dynamic;
@@ -97,6 +98,45 @@ namespace PayIP.Infra
             }
         }
 
+        public async Task<List<ContatoEmail>> GetContatosEmail(string token)
+        {
+            try
+            {
+                var url = $"{_baseUrl}drivers/report/contacts";
+
+                var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                httpRequest.Headers.Add("Authorization", $"Bearer {token}");
+
+                // Envia a requisição
+                var response = await _httpClient.SendAsync(httpRequest);
+
+                // Lê o conteúdo da resposta
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Pagamentos pendentes obtidos com sucesso.");
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    // Converte o JSON da resposta para dynamic
+                    return JsonSerializer.Deserialize<List<ContatoEmail>>(responseContent, options);
+                }
+                else
+                {
+                    _logger.LogError($"Falha ao obter pagamentos. StatusCode: {response.StatusCode}, Resposta: {responseContent}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro ao enviar requisição para obter pagamentos: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<AllPaymentResponse> GetPagamentosByMotorista(string mapaId, string token, string? status, string? taxPayer, string? nf)
         {
             try
@@ -130,7 +170,7 @@ namespace PayIP.Infra
 
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation("Pagamentos pendentes obtidos com sucesso.");
+                    _logger.LogInformation($"Pagamentos {status} obtidos com sucesso.");
                     var options = new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
@@ -141,7 +181,7 @@ namespace PayIP.Infra
                 }
                 else
                 {
-                    _logger.LogError($"Falha ao obter pagamentos. StatusCode: {response.StatusCode}, Resposta: {responseContent}");
+                    _logger.LogError($"Falha ao obter {status}. StatusCode: {response.StatusCode}, Resposta: {responseContent}");
                     return null;
                 }
             }
