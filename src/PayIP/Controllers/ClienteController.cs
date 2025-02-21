@@ -43,6 +43,25 @@ namespace PayIP.Controllers
             return BadRequest();
         }
 
+        [HttpPost("contatos")]
+        public async Task<IActionResult> ObterContatos([FromBody] GetPaymentModel getPaymentModel)
+        {
+            _logger.LogInformation($"Iniciando processo de pegar contatos");
+
+            var result = await _motoristaPagamentoService.GetContatosEmail(getPaymentModel.Motorista, getPaymentModel.Password);
+
+            var relatorio = string.Empty;
+
+            relatorio = _motoristaPagamentoService.GerarRelatorioDeContatos(result);
+
+            if (result is not null && result.Any())
+            {
+                return Ok(new { Relatorio = relatorio, Contatos = result });
+            }
+
+            return BadRequest();
+        }
+
         [HttpPost("pagamentos")]
         public async Task<IActionResult> Add([FromBody] GetPaymentModel getPaymentModel)
         {
