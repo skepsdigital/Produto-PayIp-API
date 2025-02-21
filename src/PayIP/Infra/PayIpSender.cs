@@ -12,9 +12,9 @@ namespace PayIP.Infra
         private readonly ILogger<PayIpSender> _logger;
         private readonly HttpClient _httpClient;
 
-        private readonly string _clientAuthUrl = "https://api.hml.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
-        private readonly string _loginUrl = "https://keycloak.hml.payip.com.br/realms/portal/protocol/openid-connect/token";
-        private readonly string _baseUrl = "https://api.hml.payip.com.br/v1/";
+        private readonly string _clientAuthUrl = "https://api.prod.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
+        private readonly string _loginUrl = "https://keycloak.prod.payip.com.br/realms/portal/protocol/openid-connect/token";
+        private readonly string _baseUrl = "https://api.prod.payip.com.br/v1/";
         public PayIpSender(ILogger<PayIpSender> logger, IHttpClientFactory clientFactory)
         {
             _logger = logger;
