@@ -15,6 +15,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IBlipSenderNotification, BlipSenderNotification>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IClientePagamentoService, ClientePagamentoService>();
+builder.Services.AddScoped<IMotoristaPagamentoService, MotoristaPagamentoService>();
 builder.Services.AddScoped<IPayIpSender, PayIpSender>();
 builder.Services.AddAWSService<IAmazonS3>();
 

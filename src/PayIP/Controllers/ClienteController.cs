@@ -14,16 +14,17 @@ namespace PayIP.Controllers
     {
         private readonly ILogger<ClienteController> _logger;
         private readonly IClientePagamentoService _clientePagamentoService;
+        private readonly IMotoristaPagamentoService _motoristaPagamentoService;
         private readonly IAmazonS3 _s3client;
         private readonly string _bucketName;
 
-        public ClienteController(ILogger<ClienteController> logger, IClientePagamentoService clientePagamentoService, IAmazonS3 s3client)
+        public ClienteController(ILogger<ClienteController> logger, IClientePagamentoService clientePagamentoService, IAmazonS3 s3client, IMotoristaPagamentoService motoristaPagamentoService)
         {
             _logger = logger;
             _clientePagamentoService = clientePagamentoService;
             _s3client = s3client;
             _bucketName = "produtos.com.br";
-
+            _motoristaPagamentoService = motoristaPagamentoService;
         }
 
         [HttpGet("pagamentos/{cpf}")]
@@ -37,6 +38,32 @@ namespace PayIP.Controllers
             if (result is not null && result.Any())
             {
                 return Ok(new {Relatorio = relatorio, Pagamentos = result});
+            }
+
+            return BadRequest();
+        }
+
+        [HttpPost("pagamentos")]
+        public async Task<IActionResult> Add([FromBody] GetPaymentModel getPaymentModel)
+        {
+            _logger.LogInformation($"Iniciando processo de pegar pagamentos");
+
+            var result = await _motoristaPagamentoService.ObterPagamentosAsync(getPaymentModel.MapaId, getPaymentModel.Motorista, getPaymentModel.Password, getPaymentModel.Status, getPaymentModel.TaxPayerId, getPaymentModel.NF);
+
+            var relatorio = string.Empty;
+            if(getPaymentModel.Status.Equals("PAID"))
+            {
+                relatorio = _motoristaPagamentoService.GerarRelatorioPagamentosConcluidos(result);
+            }
+            else
+            {
+                relatorio = _motoristaPagamentoService.GerarRelatorioPagamentosPendentes(result);
+            }
+
+
+            if (result is not null && result.Any())
+            {
+                return Ok(new { Relatorio = relatorio, Pagamentos = result });
             }
 
             return BadRequest();

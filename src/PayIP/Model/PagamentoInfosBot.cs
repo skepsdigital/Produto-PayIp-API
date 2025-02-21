@@ -9,6 +9,11 @@
         public string DataDeVencimento { get; set; }
         public string CodigoPix { get; set; }
 
+        public string Cliente { get; set; }
+        public string ClienteCPF { get; set; }
+        public string Title { get; set; }
+        public string CNPJ { get; set; }
+
         public int IdInterno { get; set; }
     }
 }

@@ -85,6 +85,15 @@
             public QrCodePixCashin QrCodePixCashin { get; set; }
         }
 
+        public class AllPaymentResponse
+        {
+            [JsonPropertyName("page")]
+            public int Page { get; set; }
+            public int PagaSize { get; set; }
+            public int Total { get; set; }
+            public List<Payment> Data { get; set; }
+        }
+
         public class PaymentResponse
         {
             [JsonPropertyName("companyId")]

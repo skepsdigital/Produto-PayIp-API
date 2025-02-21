@@ -13,6 +13,7 @@ namespace PayIP.Infra
         private readonly HttpClient _httpClient;
 
         private readonly string _authUrl = "https://api.prod.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
+        private readonly string _loginUrl = "https://keycloak.hml.payip.com.br/realms/portal/protocol/openid-connect/token";
 
         public PayIpSender(ILogger<PayIpSender> logger, IHttpClientFactory clientFactory)
         {
@@ -53,6 +54,100 @@ namespace PayIP.Infra
             catch (Exception ex)
             {
                 _logger.LogError($"Erro ao enviar requisição de autenticação: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<TokenResponse> GetLoginMotoraTokenAsync(string user, string pass)
+        {
+            try
+            {
+                // Monta o corpo da requisição como x-www-form-urlencoded
+                var formData = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "grant_type", "password" },
+                    { "client_id", "payip-auth-portal" },
+                    { "username", user },
+                    { "password", pass },
+                });
+
+                // Envia a requisição POST
+                var response = await _httpClient.PostAsync(_loginUrl, formData);
+
+                // Lê o conteúdo da resposta
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Token de autenticação obtido com sucesso.");
+
+
+                    return JsonSerializer.Deserialize<TokenResponse>(responseContent); ;
+                }
+                else
+                {
+                    _logger.LogError($"Falha ao obter o token. StatusCode: {response.StatusCode}, Resposta: {responseContent}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro ao enviar requisição de autenticação: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<AllPaymentResponse> GetPagamentosByMotorista(string mapaId, string token, string? status, string? taxPayer, string? nf)
+        {
+            try
+            {
+                var url = $"https://api.hml.payip.com.br/v1/drivers/payments/list?driverRouter={mapaId}&paymentMethod=AVISTA&paymentShape=PIX";
+
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    url += $"&status={status}";
+                }
+
+                if (!string.IsNullOrEmpty(taxPayer))
+                {
+                    url += $"&taxPayer={taxPayer}";
+                }
+
+                if (!string.IsNullOrEmpty(nf))
+                {
+                    url += $"&invoice={nf}";
+                }
+
+                var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                httpRequest.Headers.Add("Authorization", $"Bearer {token}");
+
+                // Envia a requisição
+                var response = await _httpClient.SendAsync(httpRequest);
+
+                // Lê o conteúdo da resposta
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Pagamentos pendentes obtidos com sucesso.");
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    // Converte o JSON da resposta para dynamic
+                    return JsonSerializer.Deserialize<AllPaymentResponse>(responseContent, options);
+                }
+                else
+                {
+                    _logger.LogError($"Falha ao obter pagamentos. StatusCode: {response.StatusCode}, Resposta: {responseContent}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro ao enviar requisição para obter pagamentos: {ex.Message}");
                 return null;
             }
         }
