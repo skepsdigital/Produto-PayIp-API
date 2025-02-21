@@ -12,9 +12,9 @@ namespace PayIP.Infra
         private readonly ILogger<PayIpSender> _logger;
         private readonly HttpClient _httpClient;
 
-        private readonly string _authUrl = "https://api.prod.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
+        private readonly string _clientAuthUrl = "https://api.hml.payip.com.br/auth/realms/portal/protocol/openid-connect/client/token";
         private readonly string _loginUrl = "https://keycloak.hml.payip.com.br/realms/portal/protocol/openid-connect/token";
-
+        private readonly string _baseUrl = "https://api.hml.payip.com.br/v1/";
         public PayIpSender(ILogger<PayIpSender> logger, IHttpClientFactory clientFactory)
         {
             _logger = logger;
@@ -33,7 +33,7 @@ namespace PayIP.Infra
                 );
 
                 // Envia a requisição POST
-                var response = await _httpClient.PostAsync(_authUrl, formData);
+                var response = await _httpClient.PostAsync(_clientAuthUrl, formData);
 
                 // Lê o conteúdo da resposta
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -101,7 +101,7 @@ namespace PayIP.Infra
         {
             try
             {
-                var url = $"https://api.hml.payip.com.br/v1/drivers/payments/list?driverRouter={mapaId}&paymentMethod=AVISTA&paymentShape=PIX";
+                var url = $"{_baseUrl}drivers/payments/list?driverRouter={mapaId}&paymentMethod=AVISTA&paymentShape=PIX";
 
 
                 if (!string.IsNullOrEmpty(status))
@@ -157,7 +157,7 @@ namespace PayIP.Infra
             try
             {
                 // Substituir {cpf} na URL pelo CPF fornecido
-                var url = $"https://api.prod.payip.com.br/v1/payments/payer/{cpf}/pending";
+                var url = $"{_baseUrl}payments/payer/{cpf}/pending";
                 // Cria a requisição GET
                 var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
                 httpRequest.Headers.Add("Authorization", $"Bearer {token}");
@@ -197,7 +197,7 @@ namespace PayIP.Infra
             try
             {
                 // Monta a URL com o companyId
-                var url = $"https://api.prod.payip.com.br/v1/payments/statement/pdf?companyId={companyId}";
+                var url = $"{_baseUrl}payments/statement/pdf?companyId={companyId}";
 
                 // Cria a requisição GET
                 var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
