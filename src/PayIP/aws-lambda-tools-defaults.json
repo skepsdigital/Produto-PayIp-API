@@ -13,5 +13,5 @@
     "template"      : "serverless.template",
     "template-parameters" : "",
     "s3-bucket"           : "produtos.com.br",
-    "stack-name"          : "produtos-payip-hmg"
+    "stack-name"          : "produtos-payip"
 }
